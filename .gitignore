@@ -2,3 +2,11 @@
 **/.env
 **/jellyfin-cache/*
 **/jellyfin-config/*
+bazarr
+gluetun
+jellyseerr
+lidarr
+prowlarr
+qbittorrent
+radarr
+sonarr
