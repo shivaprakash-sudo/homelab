@@ -7,8 +7,8 @@ services:
       - 8096:8096/tcp
       # - 7359:7359/udp 
     volumes:
-      - ./jellyfin-config:/config
-      - ./jellyfin-cache:/cache
+      - ${CONFIG_LOCATION}/jellyfin-config:/config
+      - ${CONFIG_LOCATION}/jellyfin-cache:/cache
       - ${DATA_LOCATION}:/data
     restart: 'unless-stopped'
     environment:
@@ -35,7 +35,7 @@ services:
       - 8191:8191   # FlareSolverr
       # - 5055:5055   # Jellyseerr
     volumes:
-      - ./gluetun:/gluetun
+      - ${CONFIG_LOCATION}/gluetun:/gluetun
       # - ./gluetun/us-den.conf:/gluetun/wireguard/wg0.conf
     environment:
       - VPN_TYPE=wireguard
@@ -57,7 +57,7 @@ services:
       - WEBUI_ADDRESS=0.0.0.0
       - WEBUI_EXTERNAL_ACCESS=true
     volumes:
-      - ./qbittorrent:/config
+      - ${CONFIG_LOCATION}/qbittorrent:/config
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
@@ -75,7 +75,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - ./radarr:/config
+      - ${CONFIG_LOCATION}/radarr:/config
       - ${DATA_LOCATION}:/data
 
   sonarr:
@@ -92,7 +92,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - ./sonarr:/config
+      - ${CONFIG_LOCATION}/sonarr:/config
       - ${DATA_LOCATION}:/data
 
   lidarr:
@@ -108,7 +108,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - ./lidarr:/config
+      - ${CONFIG_LOCATION}/lidarr:/config
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
@@ -126,7 +126,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - ./bazarr:/config
+      - ${CONFIG_LOCATION}/bazarr:/config
       - ${DATA_LOCATION}:/data
 
   prowlarr:
@@ -143,7 +143,7 @@ services:
       - PGID=1000
       - TZ=${TIMEZONE}
     volumes:
-      - ./prowlarr:/config
+      - ${CONFIG_LOCATION}/prowlarr:/config
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -160,13 +160,14 @@ services:
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
+    user: 1000:1000
     environment:
       - TZ=${TIMEZONE}   
       - LOG_LEVEL=info
     ports:
       - "5055:5055"
     volumes:
-      - ./jellyseerr:/app/config
+      - ${CONFIG_LOCATION}/jellyseerr:/app/config
     restart: unless-stopped
     depends_on:
       - gluetun
