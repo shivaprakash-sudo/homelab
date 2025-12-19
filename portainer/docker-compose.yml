@@ -1,0 +1,20 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    expose:
+      - "9000"
+      - "9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer_data:/data
+    networks:
+      - proxy_net
+
+volumes:
+  portainer_data:
+
+networks:
+  proxy_net:
+    external: true

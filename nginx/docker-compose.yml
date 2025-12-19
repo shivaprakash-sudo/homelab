@@ -1,0 +1,42 @@
+services:
+  db:
+    image: jc21/mariadb-aria:latest
+    container_name: proxy_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_MYSQL_NAME}
+      - MYSQL_USER=${DB_MYSQL_USER}
+      - MYSQL_PASSWORD=${DB_MYSQL_PASSWORD}
+    networks:
+      - proxy_net
+
+  proxy:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    environment:
+      - DB_MYSQL_HOST=${DB_MYSQL_HOST}
+      - DB_MYSQL_PORT=${DB_MYSQL_PORT}
+      - DB_MYSQL_USER=${DB_MYSQL_USER}
+      - DB_MYSQL_PASSWORD=${DB_MYSQL_PASSWORD}
+      - DB_MYSQL_NAME=${DB_MYSQL_NAME}
+    volumes:
+      - ./proxy/data:/data
+      - ./proxy/letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+    networks:
+      - proxy_net
+
+networks:
+  proxy_net:
+    external: true
