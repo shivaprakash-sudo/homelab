@@ -10,3 +10,5 @@ prowlarr
 qbittorrent
 radarr
 sonarr
+nginx/proxy
+portainer/portainer_data

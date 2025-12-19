@@ -1,0 +1,19 @@
+services:
+  kiwix:
+    image: ghcr.io/kiwix/kiwix-serve:latest
+    container_name: kiwix
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    volumes:
+      - ${ZIM_LOCATION}:/data
+    expose:
+      - "8080"
+    # ports:
+    #   - 8080:8080
+    command:
+      - "*.zim"
+
+networks:
+  proxy_net:
+    external: true

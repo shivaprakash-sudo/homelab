@@ -30,6 +30,8 @@ services:
     restart: always
     healthcheck:
       disable: false
+    networks:
+      - proxy_net
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -46,6 +48,8 @@ services:
     restart: always
     healthcheck:
       disable: false
+    networks:
+      - proxy_net
 
   redis:
     container_name: immich_redis
@@ -69,6 +73,12 @@ services:
       - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
+  networks:
+      - proxy_net
 
 volumes:
   model-cache:
+
+networks:
+  proxy_net:
+    external: true
