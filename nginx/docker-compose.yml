@@ -9,12 +9,12 @@ services:
       - MYSQL_USER=${DB_MYSQL_USER}
       - MYSQL_PASSWORD=${DB_MYSQL_PASSWORD}
     volumes:
-      - ./proxy/mysql:/var/lib/mysql
+      - /data/proxy/mysql:/var/lib/mysql
     networks:
       - proxy_net
 
   proxy:
-    image: jc21/nginx-proxy-manager:2.13.5
+    image: jc21/nginx-proxy-manager:latest
     container_name: nginx-proxy-manager
     restart: unless-stopped
     depends_on:
@@ -31,8 +31,8 @@ services:
       - DB_MYSQL_PASSWORD=${DB_MYSQL_PASSWORD}
       - DB_MYSQL_NAME=${DB_MYSQL_NAME}
     volumes:
-      - ./proxy/data:/data
-      - ./proxy/letsencrypt:/etc/letsencrypt
+      - /data/proxy/data:/data
+      - /data/proxy/letsencrypt:/etc/letsencrypt
     healthcheck:
       test: ["CMD", "/usr/bin/check-health"]
       interval: 10s
