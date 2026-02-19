@@ -4,14 +4,18 @@ services:
     container_name: jellyfin
     restart: unless-stopped
     user: 1000:1000
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
     environment:
       - TZ=${TIMEZONE}
     volumes:
       - ${CONFIG_LOCATION}/jellyfin-config:/config
       - ${CONFIG_LOCATION}/jellyfin-cache:/cache
       - ${DATA_LOCATION}:/data
-    expose:
-      - "8096"
+    # expose:
+    #   - "8096"
     networks:
       - proxy_net
 
@@ -113,22 +117,22 @@ services:
       - ${DATA_LOCATION}:/data
     restart: unless-stopped
 
-  bazarr:
-    image: lscr.io/linuxserver/bazarr
-    container_name: bazarr
-    restart: unless-stopped
-    network_mode: "service:gluetun"  # Routes all traffic through Gluetun
-    depends_on:
-      - gluetun
-    # ports:
-    #   - 6767:6767
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${CONFIG_LOCATION}/bazarr:/config
-      - ${DATA_LOCATION}:/data
+  # bazarr:
+  #   image: lscr.io/linuxserver/bazarr
+  #   container_name: bazarr
+  #   restart: unless-stopped
+  #   network_mode: "service:gluetun"  # Routes all traffic through Gluetun
+  #   depends_on:
+  #     - gluetun
+  #   # ports:
+  #   #   - 6767:6767
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=${TIMEZONE}
+  #   volumes:
+  #     - ${CONFIG_LOCATION}/bazarr:/config
+  #     - ${DATA_LOCATION}:/data
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr
@@ -158,22 +162,30 @@ services:
     #   - 8191:8191
     restart: unless-stopped
 
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
     restart: unless-stopped
     user: 1000:1000
     environment:
+      - LOG_LEVEL=debug
       - TZ=${TIMEZONE}
     volumes:
       - ${CONFIG_LOCATION}/jellyseerr:/app/config
-    expose:
-      - "5055"
+    # expose:
+    #   - "5055"
     depends_on:
       - gluetun
       - jellyfin
       - sonarr
       - radarr
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
     networks:
       - proxy_net
 
