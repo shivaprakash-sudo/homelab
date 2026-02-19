@@ -1,6 +1,6 @@
 services:
   db:
-    image: jc21/mariadb-aria:latest
+    image: jc21/mariadb-aria:10.11.5-innodb
     container_name: proxy_db
     restart: unless-stopped
     environment:
@@ -8,15 +8,18 @@ services:
       - MYSQL_DATABASE=${DB_MYSQL_NAME}
       - MYSQL_USER=${DB_MYSQL_USER}
       - MYSQL_PASSWORD=${DB_MYSQL_PASSWORD}
+    volumes:
+      - ./proxy/mysql:/var/lib/mysql
     networks:
       - proxy_net
 
   proxy:
-    image: jc21/nginx-proxy-manager:latest
+    image: jc21/nginx-proxy-manager:2.13.5
     container_name: nginx-proxy-manager
     restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_started
     ports:
       - "80:80"
       - "443:443"
