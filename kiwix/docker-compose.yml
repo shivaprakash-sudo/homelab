@@ -12,7 +12,8 @@ services:
     # ports:
     #   - 8080:8080
     command:
-      - "*.zim"
+      - --library
+      - /data/library.xml
 
 networks:
   proxy_net:
