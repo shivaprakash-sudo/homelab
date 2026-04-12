@@ -12,3 +12,5 @@ radarr
 sonarr
 nginx/proxy
 portainer/portainer_data
+pihole/pihole
+dlpx/duckdns-update.sh
