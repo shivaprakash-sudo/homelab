@@ -1,0 +1,29 @@
+services:
+  tg-immich-sync:
+    build: .
+    container_name: tg-immich-sync
+    restart: unless-stopped
+
+    volumes:
+      - ./downloads:/downloads    # downloaded videos land here
+      - ./session:/session        # Telethon session persisted here
+
+    environment:
+      # ── Telegram ──────────────────────────────
+      TG_API_ID: ${TELEGRAM_API_ID}          # from https://my.telegram.org
+      TG_API_HASH: ${TELEGRAM_API_HASH}
+      TG_CHANNEL: ${TELEGRAM_GROUP_NAME}     # e.g. "some_channel" or numeric -1001234567890
+
+      # ── Immich ────────────────────────────────
+      IMMICH_URL: ${IMMICH_URL}   # your self-hosted Immich URL
+      IMMICH_API_KEY: ${IMMICH_API_KEY}    # Account Settings → API Keys
+
+      # ── Optional ──────────────────────────────
+      DOWNLOAD_DIR: "/downloads"
+      SESSION_FILE: "/session/tg_session"
+
+      # Set to "true" to download existing channel history on first start
+      BACKFILL: "true"
+      BACKFILL_LIMIT: "0"   # 0 = unlimited (careful on large channels)
+
+      LOG_LEVEL: "INFO"       # DEBUG for verbose output
