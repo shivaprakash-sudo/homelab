@@ -14,3 +14,5 @@ nginx/proxy
 portainer/portainer_data
 pihole/pihole
 dlpx/duckdns-update.sh
+telegram-to-immich/downloads
+telegram-to-immich/session
