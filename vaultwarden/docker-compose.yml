@@ -1,0 +1,18 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    volumes:
+      - /mnt/ssd/vaultwarden:/data
+    environment:
+      - DOMAIN=${DOMAIN}
+      # - SIGNUPS_ALLOWED=false
+      - WEBSOCKET_ENABLED=true
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+    networks:
+      - proxy_net
+
+networks:
+  proxy_net:
+    external: true
