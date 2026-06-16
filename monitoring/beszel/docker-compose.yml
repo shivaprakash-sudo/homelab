@@ -1,0 +1,35 @@
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel
+    restart: unless-stopped
+    ports:
+      - 8090:8090
+    volumes:
+      - /mnt/ssd/monitoring/beszel/data:/beszel_data
+      - /mnt/ssd/monitoring/beszel/socket:/beszel_socket
+    environment:
+      APP_URL: ${APP_URL}
+    networks:
+      - proxy_net
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /mnt/ssd/monitoring/beszel/agent_data:/var/lib/beszel-agent
+      - /mnt/ssd/monitoring/beszel/socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/ssd/.beszel:/extra-filesystems/ssd:ro
+      - /data/.beszel:/extra-filesystems/data:ro
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      HUB_URL: http://localhost:8090
+      TOKEN: ${AGENT_TOKEN}       # fill in after first login
+      KEY:  ${AGENT_KEY} # fill in after first login
+
+networks:
+  proxy_net:
+    external: true
