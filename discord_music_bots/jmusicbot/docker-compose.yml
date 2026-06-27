@@ -1,0 +1,8 @@
+services:
+  jmusicbot:
+    build: .
+    container_name: jmusicbot
+    restart: unless-stopped
+    volumes:
+      - ./config.txt:/app/config.txt
+      - ./serversettings:/app/serversettings

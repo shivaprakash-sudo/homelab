@@ -1,0 +1,28 @@
+services:
+  muse:
+    image: ghcr.io/museofficial/muse:yt-dlp-latest  # rebuilt regularly with latest yt-dlp
+    container_name: muse
+    restart: unless-stopped
+    volumes:
+      - /mnt/ssd/muse:/data  # stores cache + bot DB
+    environment:
+      # Required
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+
+      # Optional — enables Spotify URL conversion
+      # - SPOTIFY_CLIENT_ID=
+      # - SPOTIFY_CLIENT_SECRET=
+
+      # yt-dlp auto-update on each startup (recommended)
+      - YT_DLP_AUTO_UPDATE=true
+
+      # Cache limit (default is 2GB)
+      - CACHE_LIMIT=1GB
+
+      # Skip sponsor/intro segments via SponsorBlock
+      - ENABLE_SPONSORBLOCK=true
+
+      # Set bot status to "Listening to Music" (default)
+      # - BOT_STATUS=online
+      # - BOT_ACTIVITY_TYPE=LISTENING
