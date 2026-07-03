@@ -4,7 +4,7 @@ services:
     container_name: muse
     restart: unless-stopped
     volumes:
-      - /mnt/ssd/muse:/data  # stores cache + bot DB
+      - /mnt/ssd/homelab/muse:/data  # stores cache + bot DB
     environment:
       # Required
       - DISCORD_TOKEN=${DISCORD_TOKEN}

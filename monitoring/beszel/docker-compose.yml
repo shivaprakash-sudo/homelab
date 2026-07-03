@@ -6,8 +6,8 @@ services:
     ports:
       - 8090:8090
     volumes:
-      - /mnt/ssd/monitoring/beszel/data:/beszel_data
-      - /mnt/ssd/monitoring/beszel/socket:/beszel_socket
+      - /mnt/ssd/homelab/monitoring/beszel/data:/beszel_data
+      - /mnt/ssd/homelab/monitoring/beszel/socket:/beszel_socket
     environment:
       APP_URL: ${APP_URL}
     networks:
@@ -19,8 +19,8 @@ services:
     restart: unless-stopped
     network_mode: host
     volumes:
-      - /mnt/ssd/monitoring/beszel/agent_data:/var/lib/beszel-agent
-      - /mnt/ssd/monitoring/beszel/socket:/beszel_socket
+      - /mnt/ssd/homelab/monitoring/beszel/agent_data:/var/lib/beszel-agent
+      - /mnt/ssd/homelab/monitoring/beszel/socket:/beszel_socket
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/ssd/.beszel:/extra-filesystems/ssd:ro
       - /data/.beszel:/extra-filesystems/data:ro

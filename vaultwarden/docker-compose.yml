@@ -4,7 +4,7 @@ services:
     container_name: vaultwarden
     restart: unless-stopped
     volumes:
-      - /mnt/ssd/vaultwarden:/data
+      - /mnt/ssd/homelab/vaultwarden:/data
     environment:
       - DOMAIN=${DOMAIN}
       # - SIGNUPS_ALLOWED=false
