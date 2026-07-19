@@ -1,5 +1,7 @@
 services:
-  paperless-broker:
+  # redis data broker
+  broker:
+    container_name: paperless-broker
     image: docker.io/library/redis:7
     restart: unless-stopped
     volumes:
@@ -7,7 +9,9 @@ services:
     networks:
       - proxy_net
 
-  paperless-db:
+  # postgres database
+  db:
+    container_name: paperless-db
     image: docker.io/library/postgres:16
     restart: unless-stopped
     volumes:
@@ -15,16 +19,19 @@ services:
     environment:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - proxy_net
 
+  # actual paperless web server that can be accessed
   webserver:
+    container_name: paperless-webserver
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
     depends_on:
-      - paperless-db
-      - paperless-broker
+      - db
+      - broker
+      - gotenberg
+      - tika
     ports:
       - "8010:8000"
     volumes:
@@ -32,20 +39,89 @@ services:
       - /mnt/ssd/homelab/paperless/media:/usr/src/paperless/media
       - /mnt/ssd/homelab/paperless/export:/usr/src/paperless/export
       - /mnt/ssd/homelab/paperless/consume:/usr/src/paperless/consume
+    env_file: docker-compose.env
     environment:
-      PAPERLESS_REDIS: redis://paperless-broker:6379
-      PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+
       PAPERLESS_DBNAME: paperless
       PAPERLESS_DBUSER: paperless
-      PAPERLESS_DBPASS: ${PAPERLESS_DBPASS}
-      PAPERLESS_URL: https://paperless.psp-homelab.duckdns.org
-      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
-      PAPERLESS_TIME_ZONE: Asia/Kolkata
-      PAPERLESS_OCR_LANGUAGE: eng
       PAPERLESS_ADMIN_USER: admin
-      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD}
     networks:
       - proxy_net
+    
+  # for converting emails or other types of docs to pdfs
+  gotenberg:
+    container_name: paperless-gotenberg
+    image: docker.io/gotenberg/gotenberg:8.25
+    restart: unless-stopped
+    # The gotenberg chromium route is used to convert .eml files. We do not
+    # want to allow external content like tracking pixels or even javascript.
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    networks:
+      - proxy_net
+  tika:
+    container_name: paperless-tika
+    image: docker.io/apache/tika:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+  
+  # AI for tagging based on the content inside
+  # paperless-ai:
+  #   container_name: paperless-ai
+  #   image: clusterzx/paperless-ai:latest
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - webserver
+  #   ports:
+  #     - "8011:3000"
+  #   volumes:
+  #     - /mnt/ssd/homelab/paperless/paperless-ai:/app/data
+  #   environment:
+  #     PAPERLESS_API_URL: http://paperless-webserver:8000/api
+  #     PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
+  #     AI_PROVIDER: ollama
+  #     OLLAMA_API_URL: ${OLLAMA_API_URL}
+  #     OLLAMA_MODEL: qwen3.5:4b
+  #     PROCESS_PREDEFINED_DOCUMENTS: yes
+  #     TAGS: yes
+  #     CORRESPONDENT: yes
+  #     DOCUMENT_TYPE: yes
+  #   networks:
+  #     - proxy_net
+
+  # # AI for visually scanning the content for better OCR
+  # paperless-gpt:
+  #   container_name: paperless-gpt
+  #   image: icereed/paperless-gpt:latest
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - webserver
+  #   volumes:
+  #     - /mnt/ssd/homelab/paperless/paperless-gpt:/app/data
+  #   environment:
+  #     PAPERLESS_BASE_URL: http://paperless-webserver:8000
+  #     PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN}
+  #     LLM_PROVIDER: ollama
+  #     OLLAMA_HOST: ${OLLAMA_API_URL}
+  #     LLM_MODEL: qwen3.5:4b
+  #     OCR_PROVIDER: llm
+  #     VISION_LLM_PROVIDER: ollama
+  #     VISION_LLM_MODEL: qwen3.5:4b
+  #     AUTO_TAG: paperless-gpt-auto
+  #     LLM_TIMEOUT: 300
+  #     OCR_TIMEOUT: 300
+  #   ports:
+  #     - "8012:8080"
+  #   networks:
+  #     - proxy_net
 
 volumes:
   redisdata:
@@ -54,3 +130,36 @@ volumes:
 networks:
   proxy_net:
     external: true
+
+
+
+# Docker Compose file for running paperless from the docker container registry.
+# This file contains everything paperless needs to run.
+# Paperless supports amd64, arm and arm64 hardware.
+#
+# All compose files of paperless configure paperless in the following way:
+#
+# - Paperless is (re)started on system boot, if it was running before shutdown.
+# - Docker volumes for storing data are managed by Docker.
+# - Folders for importing and exporting files are created in the same directory
+#   as this file and mounted to the correct folders inside the container.
+# - Paperless listens on port 8000.
+#
+# In addition to that, this Docker Compose file adds the following optional
+# configurations:
+#
+# - Instead of SQLite (default), PostgreSQL is used as the database server.
+# - Apache Tika and Gotenberg servers are started with paperless and paperless
+#   is configured to use these services. These provide support for consuming
+#   Office documents (Word, Excel, PowerPoint and their LibreOffice counter-
+#   parts).
+#
+# To install and update paperless with this file, do the following:
+#
+# - Copy this file as 'docker-compose.yml' and the files 'docker-compose.env'
+#   and '.env' into a folder.
+# - Run 'docker compose pull'.
+# - Run 'docker compose up -d'.
+#
+# For more extensive installation and update instructions, refer to the
+# documentation.
