@@ -8,8 +8,18 @@ services:
       - /dev/dri:/dev/dri
     group_add:
       - video
+      - "993"   # gpu renderer group permission for transcoding
     environment:
       - TZ=${TIMEZONE}
+    #   - NVIDIA_VISIBLE_DEVICES=all
+    #   - NVIDIA_DRIVER_CAPABILITIES=all
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     volumes:
       - ${CONFIG_LOCATION}/jellyfin-config:/config
       - ${CONFIG_LOCATION}/jellyfin-cache:/cache
