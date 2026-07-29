@@ -8,15 +8,20 @@ services:
       - PGID=1000
     volumes:
       - /data/syncthing/config:/var/syncthing/config
-      - /data:/var/syncthing    # change to whatever that needs to be synced across devices
-    ports:
-      - 8384:8384         # Web UI
-      - 22000:22000/tcp   # Sync protocol (TCP)
-      - 22000:22000/udp   # Sync protocol (QUIC)
-      - 21027:21027/udp   # Local discovery
+      - /data/syncthing:/var/syncthing    # change to whatever that needs to be synced across devices
+    # ports:
+    #   - 8384:8384         # Web UI
+    #   - 22000:22000/tcp   # Sync protocol (TCP)
+    #   - 22000:22000/udp   # Sync protocol (QUIC)
+    #   - 21027:21027/udp   # Local discovery
     restart: unless-stopped
     networks:
       - proxy_net
+    healthcheck:
+      test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
 
 networks:
   proxy_net:
