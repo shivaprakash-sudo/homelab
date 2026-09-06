@@ -6,12 +6,17 @@ services:
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
       - /mnt/ssd/homelab/nextcloud/db:/var/lib/mysql
-    # env_file: docker-compose.env
     environment:
       MYSQL_DATABASE: nextcloud
       MYSQL_USER: nextcloud
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     networks:
       - proxy_net
 
@@ -20,8 +25,16 @@ services:
     container_name: nextcloud-redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - /mnt/ssd/homelab/nextcloud/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep -q PONG"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - proxy_net
 
@@ -30,12 +43,13 @@ services:
     container_name: nextcloud-app
     restart: unless-stopped
     depends_on:
-      - nextcloud-db
-      - nextcloud-redis
+      nextcloud-db:
+        condition: service_healthy
+      nextcloud-redis:
+        condition: service_healthy
     volumes:
       - /mnt/ssd/homelab/nextcloud/html:/var/www/html
       - /mnt/ssd/homelab/nextcloud/data:/var/www/html/data
-    # env_file: docker-compose.env
     environment:
       MYSQL_HOST: nextcloud-db
       MYSQL_DATABASE: nextcloud
@@ -45,12 +59,18 @@ services:
       REDIS_HOST_PASSWORD: ${REDIS_PASSWORD}
       NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
       NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
-      NEXTCLOUD_TRUSTED_DOMAINS: nextcloud.psp-homelab.duckdns.org
+      NEXTCLOUD_TRUSTED_DOMAINS: psp-homelab.duckdns.org
       OVERWRITEPROTOCOL: https
-      OVERWRITECLIURL: https://nextcloud.psp-homelab.duckdns.org
+      OVERWRITECLIURL: https://psp-homelab.duckdns.org
       TRUSTED_PROXIES: ${PROXY_NET_SUBNET}
       PHP_MEMORY_LIMIT: 512M
       PHP_UPLOAD_LIMIT: 10G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/status.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     networks:
       - proxy_net
 
