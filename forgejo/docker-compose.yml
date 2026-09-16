@@ -1,0 +1,29 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:${FORGEJO_VERSION}
+    container_name: forgejo
+    user: "1000:1000"
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - FORGEJO__server__DOMAIN=git.psp-homelab.duckdns.org
+      - FORGEJO__server__ROOT_URL=https://git.psp-homelab.duckdns.org/
+    volumes:
+      - /mnt/ssd/homelab/forgejo/data:/var/lib/gitea
+    networks:
+      - proxy_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - NET_RAW
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-qO-", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+networks:
+  proxy_net:
+    external: true
