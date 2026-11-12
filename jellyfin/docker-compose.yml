@@ -36,32 +36,32 @@ services:
       retries: 3
 
 
-  seerr:
-    image: ghcr.io/seerr-team/seerr:latest
-    init: true
-    container_name: seerr
-    restart: unless-stopped
-    user: 1000:1000
-    environment:
-      - LOG_LEVEL=debug
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${CONFIG_LOCATION}/jellyseerr:/app/config
-    # expose:
-    #   - "5055"
-    depends_on:
-      # - gluetun
-      - jellyfin
-      - sonarr
-      - radarr
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
-      start_period: 20s
-      timeout: 3s
-      interval: 15s
-      retries: 3
-    networks:
-      - proxy_net
+  # seerr:
+  #   image: ghcr.io/seerr-team/seerr:latest
+  #   init: true
+  #   container_name: seerr
+  #   restart: unless-stopped
+  #   user: 1000:1000
+  #   environment:
+  #     - LOG_LEVEL=debug
+  #     - TZ=${TIMEZONE}
+  #   volumes:
+  #     - ${CONFIG_LOCATION}/jellyseerr:/app/config
+  #   # expose:
+  #   #   - "5055"
+  #   depends_on:
+  #     # - gluetun
+  #     - jellyfin
+  #     - sonarr
+  #     - radarr
+  #   healthcheck:
+  #     test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/status || exit 1
+  #     start_period: 20s
+  #     timeout: 3s
+  #     interval: 15s
+  #     retries: 3
+  #   networks:
+  #     - proxy_net
 
   # gluetun:
   #   image: qmcgaw/gluetun
@@ -245,19 +245,19 @@ services:
       interval: 30s
       retries: 3
 
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
-    # network_mode: "service:gluetun"  # Routes all traffic through Gluetun
-    environment:
-      - TZ=${TIMEZONE}
-    # depends_on:
-    #   - gluetun
-    # ports:
-    #   - 8191:8191
-    restart: unless-stopped
-    networks:
-      - proxy_net
+  # flaresolverr:
+  #   image: ghcr.io/flaresolverr/flaresolverr:latest
+  #   container_name: flaresolverr
+  #   # network_mode: "service:gluetun"  # Routes all traffic through Gluetun
+  #   environment:
+  #     - TZ=${TIMEZONE}
+  #   # depends_on:
+  #   #   - gluetun
+  #   # ports:
+  #   #   - 8191:8191
+  #   restart: unless-stopped
+  #   networks:
+  #     - proxy_net
 
 
 networks:
