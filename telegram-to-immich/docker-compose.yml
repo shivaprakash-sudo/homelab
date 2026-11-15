@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
 
     volumes:
-      - ./downloads:/downloads    # downloaded videos land here
+      - /mnt/ssd/homelab/telegram_to_immich_downloads:/downloads    # downloaded videos land here
       - ./session:/session        # Telethon session persisted here
 
     environment:
@@ -19,11 +19,13 @@ services:
       IMMICH_API_KEY: ${IMMICH_API_KEY}    # Account Settings → API Keys
 
       # ── Optional ──────────────────────────────
-      DOWNLOAD_DIR: "/downloads"
+      IMMICH_ALBUM: ${IMMICH_ALBUM}     # album name (auto-created if missing); "" = no album
+      MEDIA_TYPES: "both"          # videos | photos | both
+      DOWNLOAD_DIR: "/mnt/ssd/homelab/telegram_to_immich_downloads"
       SESSION_FILE: "/session/tg_session"
 
       # Set to "true" to download existing channel history on first start
       BACKFILL: "true"
       BACKFILL_LIMIT: "0"   # 0 = unlimited (careful on large channels)
 
-      LOG_LEVEL: "INFO"       # DEBUG for verbose output
+      LOG_LEVEL: "DEBUG"       # DEBUG for verbose output
